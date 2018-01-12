@@ -89,7 +89,7 @@ namespace ChibiWebserver
                         Stream output = response.OutputStream;
 
                         // Set root directory
-                        string rootDirectory = Directory.GetCurrentDirectory() + "/webroot";
+                        string rootDirectory = Directory.GetCurrentDirectory() + "/../../../../../Content/";
 
                         // Url path and filename ex. blog/index.html
                         string webpath = context.Request.Url.AbsolutePath;
@@ -199,7 +199,7 @@ namespace ChibiWebserver
             using (var md5 = MD5.Create())
             {
                 // Hash to MD5, convert to string and remove seperating lines
-                return BitConverter.ToString(md5.ComputeHash(fileData)).Replace("-", ""); 
+                return BitConverter.ToString(md5.ComputeHash(fileData)).Replace("-", "");
             }
         }
     }

@@ -81,13 +81,13 @@ namespace ChibiWebserver
         }
 
         /// <summary>
-        /// Listen to web calls
+        /// Listen to web ´requests
         /// </summary>
         public void Listen()
         {
             try
             {
-                // Loop and process web calls, as long as HtmlListener is active
+                // Loop and process browser request, as long as HtmlListener is active
                 while (listener.IsListening)
                 {
                     // Note: The GetContext method blocks while waiting for a request.
@@ -103,7 +103,7 @@ namespace ChibiWebserver
         }
 
         /// <summary>
-        /// Run webserver
+        /// Process browser request
         /// </summary>
         public void Process(HttpListenerContext context)
         {

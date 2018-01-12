@@ -6,5 +6,6 @@ Describe an agile development method, max 1000 words, examples:
 * XP
 * Devops
 * Kanban
+* Hello world
 
 See more at [https://en.wikipedia.org/wiki/Agile_software_development#Agile_software_development_methods](https://en.wikipedia.org/wiki/Agile_software_development#Agile_software_development_methods)

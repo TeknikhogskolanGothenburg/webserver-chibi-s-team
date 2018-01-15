@@ -40,6 +40,7 @@ namespace ChibiWebserver
             ".ico"
         };
 
+        // Existing server special pages
         private readonly string[] specialPages = new string[]
         {
             "counter/", "dynamic/", "info/"

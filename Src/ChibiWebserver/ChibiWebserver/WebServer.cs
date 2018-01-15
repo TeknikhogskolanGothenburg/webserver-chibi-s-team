@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Security.Cryptography;
 
@@ -17,8 +18,6 @@ namespace ChibiWebserver
     class WebServer
     {
         private HttpListener listener;
-        private string rootDirectory;
-        private Thread serverThread;
 
         // Index files, to show on a directory root
         private readonly string[] indexFiles = {
@@ -49,11 +48,8 @@ namespace ChibiWebserver
                 return;
             }
 
-            // Set root directory
-            rootDirectory = Directory.GetCurrentDirectory() + "/../../../../../Content/";
-
             // URI prefixes are required,
-            // for example "http://localhost.com:8080/".
+            // for example "http://contoso.com:8080/index/".
             if (prefixes == null || prefixes.Length == 0)
                 throw new ArgumentException("prefixes");
 
@@ -65,16 +61,11 @@ namespace ChibiWebserver
             {
                 listener.Prefixes.Add(s);
             }
-        }
 
-        /// <summary>
-        /// Start webserver
-        /// </summary>
-        public void Start()
-        {
             listener.Start();
 
             Console.WriteLine("Webserver is running...");
+<<<<<<< HEAD
 
             serverThread = new Thread(this.Listen);
             serverThread.Start();
@@ -100,78 +91,108 @@ namespace ChibiWebserver
             {
                 Console.WriteLine(ex.Message);
             }
+=======
+>>>>>>> parent of 3c6c4e5... Rebuild WebServer class
         }
 
         /// <summary>
         /// Process browser request
         /// </summary>
-        public void Process(HttpListenerContext context)
+        public void Run()
         {
-            // Obtain request and response objects.
-            HttpListenerRequest request = context.Request;
-            HttpListenerResponse response = context.Response;
-
-            // Get a response stream
-            Stream output = response.OutputStream;
-
-            // Web path and filename ex. blog/index.html
-            string webpath = context.Request.Url.AbsolutePath;
-            webpath = webpath.Substring(1);
-
-            string fileSource = GetRealFileSource(ref webpath);
-
-            Console.Write("Request on " + webpath + " return ");
-
-            // Does file exist?
-            if (File.Exists(fileSource))
+            ThreadPool.QueueUserWorkItem((o) =>
             {
-                string fileExtension = Path.GetExtension(webpath);
-
-                // Check if file extension is allowed
-                if (allowedFileExtensions.Contains(fileExtension))
+                try
                 {
-                    try
+                    while (listener.IsListening)
                     {
-                        DateTime date = DateTime.Now;
-                        DateTime expiresDate = date.Add(new TimeSpan(365, 0, 0, 0)); // Year from now
+                        // Note: The GetContext method blocks while waiting for a request. 
+                        HttpListenerContext context = listener.GetContext();
+                        HttpListenerRequest request = context.Request;
 
-                        // Read data from file
-                        byte[] fileData = File.ReadAllBytes(fileSource);
+                        // Obtain a response object.
+                        HttpListenerResponse response = context.Response;
 
-                        Console.WriteLine("200");
+                        // Get a response stream
+                        Stream output = response.OutputStream;
 
-                        // Construct headers
-                        response.StatusCode = (int)HttpStatusCode.OK;
-                        response.ContentType = MimeMapping.GetMimeMapping(fileSource);
-                        response.ContentLength64 = fileData.Length;
-                        response.AddHeader("Date", date.ToString("r"));
-                        response.AddHeader("Expires", expiresDate.ToString("r"));
-                        response.AddHeader("Last-Modified", File.GetLastWriteTime(fileSource).ToString("r"));
-                        response.AddHeader("Etag", MD5_Checksum(fileData));
+                        // Set root directory
+                        string rootDirectory = Directory.GetCurrentDirectory() + "/../../../../../Content/";
 
-                        // Write the response to output stream.
-                        output.Write(fileData, 0, fileData.Length);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("500");
-                        response.StatusCode = (int)HttpStatusCode.InternalServerError; // 500
+                        // Url path and filename ex. blog/index.html
+                        string webpath = context.Request.Url.AbsolutePath;
+                        webpath = webpath.Substring(1);
+
+                        string fileSource = Path.Combine(rootDirectory, webpath);
+
+                        // If webpath are source to path, check if any default page exist
+                        if (IsDirectory(fileSource))
+                        {
+                            foreach (string indexFile in indexFiles)
+                            {
+                                if (File.Exists(Path.Combine(rootDirectory, indexFile)))
+                                {
+                                    webpath += indexFile;
+                                    fileSource = Path.Combine(rootDirectory, webpath);
+                                    break;
+                                }
+                            }
+                        }
+
+                        Console.WriteLine("Request on " + fileSource);
+
+                        // Does file exist?
+                        if (File.Exists(fileSource))
+                        {
+                            string fileExtension = Path.GetExtension(webpath);
+
+                            // Check if file extension is allowed
+                            if (allowedFileExtensions.Contains(fileExtension))
+                            {
+                                try
+                                {
+                                    DateTime date = DateTime.Now;
+                                    DateTime expiresDate = date.Add(new TimeSpan(365, 0, 0, 0));
+
+                                    // Read data from file
+                                    byte[] fileData = File.ReadAllBytes(fileSource);
+
+                                    // Construct header
+                                    response.StatusCode = (int)HttpStatusCode.OK;
+                                    response.ContentType = MimeMapping.GetMimeMapping(fileSource);
+                                    response.ContentLength64 = fileData.Length;
+                                    response.AddHeader("Date", date.ToString("r"));
+                                    response.AddHeader("Expires", expiresDate.ToString("r"));
+                                    response.AddHeader("Last-Modified", File.GetLastWriteTime(fileSource).ToString("r"));
+                                    response.AddHeader("Etag", MD5_Checksum(fileData));
+
+                                    // Write the response to output stream.
+                                    output.Write(fileData, 0, fileData.Length);
+                                }
+                                catch (Exception ex)
+                                {
+                                    response.StatusCode = (int)HttpStatusCode.InternalServerError; // 500
+                                }
+                            }
+                            else
+                            {
+                                response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType; // 415
+                            }
+                        }
+                        else
+                        {
+                            response.StatusCode = (int)HttpStatusCode.NotFound; // 404
+                        }
+
+                        // You must close the output stream.
+                        output.Close();
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("415");
-                    response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType; // 415
+                    Console.WriteLine(ex.Message);
                 }
-            }
-            else
-            {
-                Console.WriteLine("404");
-                response.StatusCode = (int)HttpStatusCode.NotFound; // 404
-            }
-
-            // You must close the output stream.
-            output.Close();
+            });
         }
 
         /// <summary>
@@ -181,34 +202,6 @@ namespace ChibiWebserver
         {
             listener.Stop();
             listener.Close();
-            Console.WriteLine("Webserver is shutdown");
-        }
-
-        /// <summary>
-        /// Return whole source to file 
-        /// </summary>
-        /// <param name="webpath">Path and/or visit in browser (string)</param>
-        /// <returns>Whole source to file (string)</returns>
-        private string GetRealFileSource(ref string webpath)
-        {
-            string fileSource = Path.Combine(rootDirectory, webpath);
-
-            // If webpath are source to directory, check if any default page exist in this directory
-            if (IsDirectory(fileSource))
-            {
-                foreach (string indexFile in indexFiles)
-                {
-                    //Console.WriteLine(Path.Combine(fileSource, indexFile));
-                    if (File.Exists(Path.Combine(fileSource, indexFile)))
-                    {
-                        webpath = webpath + indexFile;
-                        fileSource = Path.Combine(rootDirectory, webpath);
-                        break;
-                    }
-                }
-            }
-
-            return fileSource;
         }
 
         /// <summary>

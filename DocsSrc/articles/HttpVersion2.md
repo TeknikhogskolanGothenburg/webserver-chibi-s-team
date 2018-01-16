@@ -4,10 +4,11 @@ HTTP/2 (originally named HTTP/2.0) is a major revision of the HTTP network proto
 The standardization effort was supported by Chrome, Opera, Firefox,[9] Internet Explorer 11, Safari, Amazon Silk, and Edge browsers.[10] Most major browsers added HTTP/2 support by the end of 2015.[11]
 
 According to W3Techs, as of November 2017, 20.5% of the top 10 million websites supported HTTP/2.[12]
-link https://en.wikipedia.org/wiki/HTTP/2
+
 ```
 
 HTTP/2 From Wikipedia, the free encyclopedia
 
 source /en.wikipedia.org/wiki/HTTP/2
 ```
+[Link to original text](https://en.wikipedia.org/wiki/HTTP/2)

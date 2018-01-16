@@ -17,4 +17,4 @@ Network and/or Internet connectivity (modes of connection and the number of conc
 ```
 source techopedia.com/definition/30263/web-server-architecture
 ```
-link https://www.techopedia.com/definition/30263/web-server-architecture
+[Link to original text](https://www.techopedia.com/definition/30263/web-server-architecture)

@@ -1,8 +1,4 @@
-﻿/// Based on:
-/// http://www.codingvision.net/networking/c-simple-http-server
-/// https://www.codehosting.net/blog/BlogEngine/post/Simple-C-Web-Server
-/// https://gist.github.com/aksakalli/9191056
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -224,26 +220,22 @@ namespace ChibiWebserver
 
                     int sum = 0;
 
-                    if (request.QueryString.Count > 0)
+                    int input1;
+                    int input2;
+
+                    if (request.QueryString["input1"] != null)
                     {
-                        int input1;
-                        int input2;
-
-                        if (request.QueryString["input1"] != null)
+                        if (int.TryParse(request.QueryString["input1"], out input1))
                         {
-
-                            if (int.TryParse(request.QueryString["input1"], out input1))
-                            {
-                                sum = input1;
-                            }
+                            sum = input1;
                         }
+                    }
 
-                        if (request.QueryString["input2"] != null)
+                    if (request.QueryString["input2"] != null)
+                    {
+                        if (int.TryParse(request.QueryString["input2"], out input2))
                         {
-                            if (int.TryParse(request.QueryString["input2"], out input2))
-                            {
-                                sum += input2;
-                            }
+                            sum += input2;
                         }
                     }
 
